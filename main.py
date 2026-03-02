@@ -102,4 +102,5 @@ def main():
                 print("\n\t\t!!!Invalid number")
 
 
-main()
+if __name__ == "__main__":
+    main()
