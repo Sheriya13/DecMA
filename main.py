@@ -1,4 +1,6 @@
 import os
+import argparse
+import sys
 
 
 def main_menu():
@@ -15,69 +17,70 @@ def xor(data, key):
         modif_data[i] = data[i] ^ key[i % len(key)]
     return modif_data
 
-
-def encrypt():
+def file_name_input():
     f_name = input("\n\t\tFile name: ")
+    return f_name
 
+def key_input():
     try:
         key_str = input("\n\t\tKey: ")
         if key_str == "" or len(key_str) <= 2:
             raise Exception("\n\t\t!!!The key must not be empty. Three or more characters")
+        return key_str
 
     except Exception as e:
         clr()
         print(e)
         return
 
-    key = key_str.encode('utf-8')
-
-    try:
-        with open(f_name, "rb") as file_source:
-            data = file_source.read()
-            modif_data = xor(data, key)
-            try:
-                with open(f"{f_name}.enc", "wb") as file_source:
-                    file_source.write(modif_data)
-            except FileNotFoundError: print("\n\t\tFile not found")
-            clr()
-            print("\n\t\tSuccesfull encrypted")
-    except FileNotFoundError: print("\n\t\tFile not found")
-
-
-def decrypt():
-    f_name = input("\n\t\tFile name: ")
-
-    try:
-        key_str = input("\n\t\tKey: ")
-        if key_str == "" or len(key_str) <= 2:
-            raise Exception("\n\t\t!!!The key must not be empty. Three or more characters")
-
-    except Exception as e:
-        clr()
-        print(e)
+def file_process(f_name, key_str, f_mode):
+    if key_str is None:
         return
-
+    
     key = key_str.encode('utf-8')
-
+    
     try:
-        with open(f_name, "rb") as file_source:
-            enc_data = file_source.read()
-            modif_data = xor(enc_data, key)
-
-            if not os.path.exists("decrypt"):
-                os.mkdir("decrypt")
-            output_name = f_name.replace(".enc", "")
-
-            try:
-                with open(f"decrypt\\{output_name}", "wb") as file_source:
-                    file_source.write(modif_data)
-            except FileNotFoundError: print("\n\t\tFile not found")
+        with open(f_name, "rb") as f_in:
+            data = f_in.read()
+        
+        modif_data = xor(data, key)
+        
+        if f_mode == "encrypt":
+            output_name = f"{f_name}.enc"
+        else:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            decrypt_dir = os.path.join(script_dir, "decrypt")
+            if not os.path.exists(decrypt_dir):
+                os.mkdir(decrypt_dir)
+            output_name = os.path.join(decrypt_dir, os.path.basename(f_name.replace(".enc", "")))
+            
+        with open(output_name, "wb") as f_out:
+            f_out.write(modif_data)
+        
         clr()
-        print("\n\t\tSuccesfull decrypted")
-    except FileNotFoundError: print("\n\t\tFile not found")
+        print(f"\n\t\tSuccesfully {f_mode}ed")
+    
+    except FileNotFoundError:
+        print("\n\t\t File not found")
 
 
 def main():
+    
+    if len(sys.argv) > 1:
+        parser = argparse.ArgumentParser(description= "Python file encryption utility")
+        parser.add_argument("--mode", choices=["encrypt", "decrypt"], required=True, type= str, help = "Program operating mode")
+        parser.add_argument("--path", type= str, required=True, help="File location")
+        parser.add_argument("--key", type= str, required=True, help="Key for encrypt or decrypt")
+        args = parser.parse_args()
+        
+        if args.mode == "encrypt":
+            file_process(args.path, args.key, args.mode)
+            return
+        elif args.mode == "decrypt":
+            file_process(args.path, args.key, args.mode)
+            return
+    
+    
     while True:
         main_menu()
         while True:
@@ -92,11 +95,11 @@ def main():
         match so:
             case 1:
                 clr()
-                encrypt()
+                file_process(file_name_input(), key_input(), "encrypt")
             case 2:
                 clr()
-                decrypt()
-            case 3: break
+                file_process(file_name_input(), key_input(), "decrypt")
+            case 3: return
             case _:
                 clr()
                 print("\n\t\t!!!Invalid number")
