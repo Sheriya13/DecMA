@@ -1,3 +1,3 @@
-# decma
+# DecMA
 
 ## Python file encryption utility
