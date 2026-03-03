@@ -1,24 +1,25 @@
-import os
 import argparse
+import os
 import sys
+from typing import Literal
 
 
-def main_menu():
+def main_menu() -> None:
     print("\n\t\tDecMA\n\n\t\t1. Encrypt\n\t\t2. Decrypt\n\t\t3. Exit")
 
 
-def clr():
+def clr() -> None:
     os.system("cls" if os.name == "nt" else "clear")
 
 
-def xor(data, key):
+def xor(data: bytes, key: bytes) -> bytearray:
     modif_data = bytearray(len(data))
     for i in range(len(data)):
         modif_data[i] = data[i] ^ key[i % len(key)]
     return modif_data
 
 
-def file_name_input():
+def file_name_input() -> str:
     f_name = input("\n\t\tFile name: ")
     return f_name
 
@@ -36,7 +37,7 @@ def key_input():
         return
 
 
-def file_process(f_name, key_str, f_mode):
+def file_process(f_name: str, key_str: str | None, f_mode: Literal["decrypt", "encrypt"]) -> None:
     if key_str is None:
         return
 
@@ -67,8 +68,7 @@ def file_process(f_name, key_str, f_mode):
         print("\n\t\t File not found")
 
 
-def main():
-
+def main() -> None:
     if len(sys.argv) > 1:
         parser = argparse.ArgumentParser(description="Python file encryption utility")
         parser.add_argument(
